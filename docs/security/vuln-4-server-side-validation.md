@@ -14,4 +14,4 @@ Missing validation annotations and enforcement.
 - Enforce validation in controllers
 
 ## Status
-Open
+Fixed
