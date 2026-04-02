@@ -14,4 +14,4 @@ No rate limiting or login attempt tracking.
 - Add temporary lockout after threshold
 
 ## Status
-Open
+Fixed
