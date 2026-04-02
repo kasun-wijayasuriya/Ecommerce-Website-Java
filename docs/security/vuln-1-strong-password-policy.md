@@ -14,4 +14,4 @@ No backend validation enforcing password strength.
 - Require uppercase, lowercase, number, and special character
 
 ## Status
-Open
+Fixed
