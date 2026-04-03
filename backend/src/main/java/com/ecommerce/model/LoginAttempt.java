@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,11 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "login_attempts")
-@CompoundIndex(
-        name = "ttl_index",
-        def = "{'createdAt': 1}",
-        expireAfterSeconds = 900
-)
 public class LoginAttempt {
 
     @Id
@@ -33,6 +27,7 @@ public class LoginAttempt {
 
     private boolean locked;
 
+    @Indexed(expireAfterSeconds = 900)
     private LocalDateTime createdAt;
 
     private LocalDateTime lockedUntil;
