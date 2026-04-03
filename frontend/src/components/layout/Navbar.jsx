@@ -27,11 +27,16 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   
-  const { isAuthenticated, user, logout, isAdmin } = useAuthStore();
+  const { isAuthenticated, user, logout, isAdmin, initializeAuth } = useAuthStore();
   const { getItemCount, fetchCart } = useCartStore();
   const { getItemCount: getWishlistCount, fetchWishlist } = useWishlistStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Initialize auth state on mount (checks for valid JWT cookie)
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -197,15 +202,15 @@ export default function Navbar() {
             </Link>
 
             {/* User Menu - Desktop */}
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <Menu as="div" className="relative hidden md:block">
-                <Menu.Button className="flex items-center gap-2 p-2 text-gray-600 dark:text-gray-300 
+                <Menu.Button className="flex items-center gap-2 p-2 text-gray-600 dark:text-gray-300
                                        hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg 
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg
                                 flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    {user?.firstName?.[0] || 'U'}
+                    {user?.firstName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
-                  <span className="text-sm font-medium hidden lg:block">{user?.firstName}</span>
+                  <span className="text-sm font-medium hidden lg:block">{user?.firstName || user?.email}</span>
                   <ChevronDownIcon className="h-4 w-4 hidden lg:block" />
                 </Menu.Button>
 
