@@ -5,6 +5,10 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       database: ecommerce
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
 
 server:
   port: ${PORT:8080}
