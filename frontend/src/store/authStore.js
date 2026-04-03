@@ -6,7 +6,6 @@ export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -15,10 +14,9 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.login(credentials);
-          const { token, user } = response.data.data;
+          const { user } = response.data.data;
           set({
             user,
-            token,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -36,10 +34,9 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.register(userData);
-          const { token, user } = response.data.data;
+          const { user } = response.data.data;
           set({
             user,
-            token,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -53,10 +50,14 @@ export const useAuthStore = create(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await authAPI.logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
         });
       },
@@ -80,7 +81,7 @@ export const useAuthStore = create(
       },
 
       fetchProfile: async () => {
-        if (!get().token) return;
+        if (!get().isAuthenticated) return;
         try {
           const response = await userAPI.getProfile();
           set({ user: response.data.data });
@@ -98,7 +99,7 @@ export const useAuthStore = create(
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        // token is stored in httpOnly cookie — do NOT persist to localStorage
         isAuthenticated: state.isAuthenticated,
       }),
     }
