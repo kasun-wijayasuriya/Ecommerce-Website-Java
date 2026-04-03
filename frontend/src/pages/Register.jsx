@@ -50,6 +50,10 @@ export default function Register() {
 
   const strengthLabel = getStrengthLabel(passwordScore);
 
+  // Password match validation
+  const passwordsMatch = formData.confirmPassword === formData.password;
+  const confirmPasswordError = formData.confirmPassword && !passwordsMatch;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -230,11 +234,38 @@ export default function Register() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="input-field pl-10"
+                  className={`input-field pl-10 pr-10 ${
+                    confirmPasswordError
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : passwordsMatch && formData.confirmPassword
+                      ? 'border-green-500 focus:ring-green-500/20 focus:border-green-500'
+                      : ''
+                  }`}
                   placeholder="Confirm your password"
                   required
                 />
+                {formData.confirmPassword && (
+                  <div className={`absolute right-3 top-1/2 -translate-y-1/2 ${
+                    passwordsMatch ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {passwordsMatch ? (
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                )}
               </div>
+              {confirmPasswordError && (
+                <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+              )}
+              {passwordsMatch && formData.confirmPassword && (
+                <p className="mt-1 text-xs text-green-600">Passwords match</p>
+              )}
             </div>
 
             <div>
