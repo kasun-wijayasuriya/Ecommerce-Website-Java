@@ -27,10 +27,16 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
+    private final PasswordValidatorService passwordValidatorService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered");
+        }
+
+        org.passay.RuleResult result = passwordValidatorService.validate(request.getPassword());
+        if (!result.isValid()) {
+            throw new BadRequestException(String.join(", ", passwordValidatorService.getErrors(result)));
         }
 
         User user = User.builder()
