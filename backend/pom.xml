@@ -48,6 +48,13 @@
             <version>20220608.1</version>
         </dependency>
 
+        <!-- Passay Password Validation -->
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+
         <!-- JWT Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

@@ -26,6 +26,30 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
 
+  const getPasswordStrength = (password) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      digit: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+    };
+    const score = Object.values(checks).filter(Boolean).length;
+    return { checks, score };
+  };
+
+  const { checks: passwordChecks, score: passwordScore } = getPasswordStrength(formData.password);
+
+  const getStrengthLabel = (score) => {
+    if (score === 0) return { label: '', color: '' };
+    if (score <= 2) return { label: 'Weak', color: 'text-red-500' };
+    if (score <= 3) return { label: 'Fair', color: 'text-yellow-500' };
+    if (score <= 4) return { label: 'Good', color: 'text-blue-500' };
+    return { label: 'Strong', color: 'text-green-500' };
+  };
+
+  const strengthLabel = getStrengthLabel(passwordScore);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -34,14 +58,14 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       setValidationError('Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
       return;
     }
 
@@ -158,6 +182,43 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Password strength:</span>
+                    <span className={`text-xs font-medium ${strengthLabel.color}`}>
+                      {strengthLabel.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${
+                        passwordScore <= 2 ? 'bg-red-500' :
+                        passwordScore <= 3 ? 'bg-yellow-500' :
+                        passwordScore <= 4 ? 'bg-blue-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${(passwordScore / 5) * 100}%` }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <span className={passwordChecks.length ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.length ? '✓' : '○'} At least 8 characters
+                    </span>
+                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.uppercase ? '✓' : '○'} One uppercase letter
+                    </span>
+                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.lowercase ? '✓' : '○'} One lowercase letter
+                    </span>
+                    <span className={passwordChecks.digit ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.digit ? '✓' : '○'} One number
+                    </span>
+                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.special ? '✓' : '○'} One special character
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
