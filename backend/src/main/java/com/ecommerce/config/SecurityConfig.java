@@ -72,7 +72,6 @@ public class SecurityConfig {
                                 .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;")
                         )
                         .frameOptions(frameOptions -> frameOptions.deny())
-                        .xssProtection(xss -> xss.block(true))
                 );
 
         return http.build();
