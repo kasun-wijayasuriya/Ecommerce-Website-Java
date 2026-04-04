@@ -4,6 +4,7 @@ import com.ecommerce.dto.request.UpdateProfileRequest;
 import com.ecommerce.dto.response.ApiResponse;
 import com.ecommerce.dto.response.UserResponse;
 import com.ecommerce.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class UserController {
     }
     
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<UserResponse>> updateProfile(@RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
         UserResponse response = userService.updateProfile(request);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
     }
