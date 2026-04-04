@@ -9,6 +9,17 @@ export default function Profile() {
   const { user, fetchProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const NAME_REGEX = /^[a-zA-Z\s\-'\.]*$/;
+  const NAME_MAX_LENGTH = 50;
+
+  const validateNameField = (name, value) => {
+    if (!value.trim()) return `${name} is required`;
+    if (value.length > NAME_MAX_LENGTH) return `${name} must not exceed ${NAME_MAX_LENGTH} characters`;
+    if (!NAME_REGEX.test(value)) return `${name} contains invalid characters`;
+    return '';
+  };
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -50,11 +61,26 @@ export default function Profile() {
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+      if (name === 'firstName' || name === 'lastName') {
+        const label = name === 'firstName' ? 'First name' : 'Last name';
+        const error = validateNameField(label, value);
+        setFieldErrors(prev => ({ ...prev, [name]: error }));
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFieldErrors({});
+
+    const firstNameError = validateNameField('First name', formData.firstName);
+    const lastNameError = validateNameField('Last name', formData.lastName);
+
+    if (firstNameError || lastNameError) {
+      setFieldErrors({ firstName: firstNameError, lastName: lastNameError });
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Flatten the address object for the API
@@ -117,8 +143,15 @@ export default function Profile() {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="input-field"
+                  className={`input-field ${
+                    fieldErrors.firstName
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : ''
+                  }`}
                 />
+                {fieldErrors.firstName && (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Last Name</label>
@@ -127,8 +160,15 @@ export default function Profile() {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="input-field"
+                  className={`input-field ${
+                    fieldErrors.lastName
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : ''
+                  }`}
                 />
+                {fieldErrors.lastName && (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
