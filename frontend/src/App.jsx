@@ -14,6 +14,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const OAuthSuccess = lazy(() => import('./pages/OAuthSuccess'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));
 const OrderDetails = lazy(() => import('./pages/OrderDetails'));
@@ -50,6 +51,7 @@ function App() {
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/oauth-success" element={<OAuthSuccess />} />
               
               {/* Protected Routes */}
               <Route path="/cart" element={

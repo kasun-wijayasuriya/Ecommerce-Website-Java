@@ -26,6 +26,34 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
 
+  const getPasswordStrength = (password) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      digit: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+    };
+    const score = Object.values(checks).filter(Boolean).length;
+    return { checks, score };
+  };
+
+  const { checks: passwordChecks, score: passwordScore } = getPasswordStrength(formData.password);
+
+  const getStrengthLabel = (score) => {
+    if (score === 0) return { label: '', color: '' };
+    if (score <= 2) return { label: 'Weak', color: 'text-red-500' };
+    if (score <= 3) return { label: 'Fair', color: 'text-yellow-500' };
+    if (score <= 4) return { label: 'Good', color: 'text-blue-500' };
+    return { label: 'Strong', color: 'text-green-500' };
+  };
+
+  const strengthLabel = getStrengthLabel(passwordScore);
+
+  // Password match validation
+  const passwordsMatch = formData.confirmPassword === formData.password;
+  const confirmPasswordError = formData.confirmPassword && !passwordsMatch;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -34,14 +62,14 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       setValidationError('Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
       return;
     }
 
@@ -158,6 +186,43 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Password strength:</span>
+                    <span className={`text-xs font-medium ${strengthLabel.color}`}>
+                      {strengthLabel.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${
+                        passwordScore <= 2 ? 'bg-red-500' :
+                        passwordScore <= 3 ? 'bg-yellow-500' :
+                        passwordScore <= 4 ? 'bg-blue-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${(passwordScore / 5) * 100}%` }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <span className={passwordChecks.length ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.length ? '✓' : '○'} At least 8 characters
+                    </span>
+                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.uppercase ? '✓' : '○'} One uppercase letter
+                    </span>
+                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.lowercase ? '✓' : '○'} One lowercase letter
+                    </span>
+                    <span className={passwordChecks.digit ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.digit ? '✓' : '○'} One number
+                    </span>
+                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-400'}>
+                      {passwordChecks.special ? '✓' : '○'} One special character
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -169,11 +234,38 @@ export default function Register() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="input-field pl-10"
+                  className={`input-field pl-10 pr-10 ${
+                    confirmPasswordError
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : passwordsMatch && formData.confirmPassword
+                      ? 'border-green-500 focus:ring-green-500/20 focus:border-green-500'
+                      : ''
+                  }`}
                   placeholder="Confirm your password"
                   required
                 />
+                {formData.confirmPassword && (
+                  <div className={`absolute right-3 top-1/2 -translate-y-1/2 ${
+                    passwordsMatch ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {passwordsMatch ? (
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                )}
               </div>
+              {confirmPasswordError && (
+                <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+              )}
+              {passwordsMatch && formData.confirmPassword && (
+                <p className="mt-1 text-xs text-green-600">Passwords match</p>
+              )}
             </div>
 
             <div>
