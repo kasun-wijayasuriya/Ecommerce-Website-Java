@@ -6,19 +6,37 @@ export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
+
+      // Initialize auth state on app load (checks if valid JWT cookie exists)
+      initializeAuth: async () => {
+        // If we already have user data, skip re-fetch
+        if (get().user && get().isAuthenticated) {
+          return true;
+        }
+        try {
+          const response = await userAPI.getProfile();
+          set({
+            user: response.data.data,
+            isAuthenticated: true,
+          });
+          return true;
+        } catch (error) {
+          // If no valid session, reset auth state
+          set({ user: null, isAuthenticated: false });
+          return false;
+        }
+      },
 
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.login(credentials);
-          const { token, user } = response.data.data;
+          const { user } = response.data.data;
           set({
             user,
-            token,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -36,10 +54,9 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.register(userData);
-          const { token, user } = response.data.data;
+          const { user } = response.data.data;
           set({
             user,
-            token,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -53,10 +70,14 @@ export const useAuthStore = create(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await authAPI.logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
         });
       },
@@ -80,12 +101,20 @@ export const useAuthStore = create(
       },
 
       fetchProfile: async () => {
-        if (!get().token) return;
         try {
           const response = await userAPI.getProfile();
-          set({ user: response.data.data });
+          set({ 
+            user: response.data.data,
+            isAuthenticated: true,
+          });
+          return true;
         } catch (error) {
           console.error('Failed to fetch profile:', error);
+          // If 401, user is not authenticated
+          if (error.response?.status === 401) {
+            set({ user: null, isAuthenticated: false });
+          }
+          return false;
         }
       },
 
@@ -98,7 +127,7 @@ export const useAuthStore = create(
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        // token is stored in httpOnly cookie — do NOT persist to localStorage
         isAuthenticated: state.isAuthenticated,
       }),
     }
