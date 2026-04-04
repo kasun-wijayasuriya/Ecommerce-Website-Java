@@ -15,8 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    
+
     private final UserRepository userRepository;
+    private final HtmlSanitizerService htmlSanitizerService;
     
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -31,12 +32,12 @@ public class UserService {
     @Transactional
     public UserResponse updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUser();
-        
+
         if (hasValue(request.getFirstName())) {
-            user.setFirstName(request.getFirstName());
+            user.setFirstName(htmlSanitizerService.sanitize(request.getFirstName()));
         }
         if (hasValue(request.getLastName())) {
-            user.setLastName(request.getLastName());
+            user.setLastName(htmlSanitizerService.sanitize(request.getLastName()));
         }
         if (request.getPhone() != null) {
             user.setPhone(request.getPhone());

@@ -29,6 +29,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
     private final PasswordValidatorService passwordValidatorService;
+    private final HtmlSanitizerService htmlSanitizerService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -41,8 +42,8 @@ public class AuthService {
         }
 
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .firstName(htmlSanitizerService.sanitize(request.getFirstName()))
+                .lastName(htmlSanitizerService.sanitize(request.getLastName()))
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
