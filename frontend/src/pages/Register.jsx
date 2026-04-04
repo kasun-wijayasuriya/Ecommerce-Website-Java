@@ -25,6 +25,17 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const NAME_REGEX = /^[a-zA-Z\s\-'\.]*$/;
+  const NAME_MAX_LENGTH = 50;
+
+  const validateNameField = (name, value) => {
+    if (!value.trim()) return `${name} is required`;
+    if (value.length > NAME_MAX_LENGTH) return `${name} must not exceed ${NAME_MAX_LENGTH} characters`;
+    if (!NAME_REGEX.test(value)) return `${name} contains invalid characters`;
+    return '';
+  };
 
   const getPasswordStrength = (password) => {
     const checks = {
@@ -58,10 +69,25 @@ export default function Register() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setValidationError('');
+
+    if (name === 'firstName' || name === 'lastName') {
+      const label = name === 'firstName' ? 'First name' : 'Last name';
+      const error = validateNameField(label, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFieldErrors({});
+
+    const firstNameError = validateNameField('First name', formData.firstName);
+    const lastNameError = validateNameField('Last name', formData.lastName);
+
+    if (firstNameError || lastNameError) {
+      setFieldErrors({ firstName: firstNameError, lastName: lastNameError });
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setValidationError('Passwords do not match');
@@ -110,11 +136,18 @@ export default function Register() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="input-field pl-10"
+                    className={`input-field pl-10 ${
+                      fieldErrors.firstName
+                        ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                        : ''
+                    }`}
                     placeholder="First name"
                     required
                   />
                 </div>
+                {fieldErrors.firstName && (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Last Name</label>
@@ -123,10 +156,17 @@ export default function Register() {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="input-field"
+                  className={`input-field ${
+                    fieldErrors.lastName
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : ''
+                  }`}
                   placeholder="Last name"
                   required
                 />
+                {fieldErrors.lastName && (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>
+                )}
               </div>
             </div>
 
